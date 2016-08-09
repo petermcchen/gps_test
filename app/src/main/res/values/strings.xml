@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">GPS Tracker</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+
+    <string name="title_activity_sensor_maps">Sensor Map</string>
+
+    <string name="about_website">http://www.accton.com</string>
+    <string name="about_version">Version</string>
+    <string name="about_copyright">Copyright Accton Technology Corporation</string>
+</resources>

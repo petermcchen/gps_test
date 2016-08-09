@@ -1,0 +1,33 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="nav_header_vertical_spacing">16dp</dimen>
+    <dimen name="nav_header_height">160dp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="navigation_drawer_width">240dp</dimen>
+
+    <dimen name="media_title_height">48dp</dimen>
+    <dimen name="media_title_size">24dp</dimen>
+    <dimen name="media_controller_height">80dp</dimen>
+    <dimen name="media_button_controller_height">60dp</dimen>
+    <dimen name="media_button_padding">4dp</dimen>
+    <dimen name="media_time_size">12dp</dimen>
+    <dimen name="media_time_width">60dp</dimen>
+    <dimen name="media_time_padding">6dp</dimen>
+
+    <dimen name="media_margin_left">20dp</dimen>
+    <dimen name="media_margin_right">20dp</dimen>
+    <dimen name="media_margin_bottom">8dp</dimen>
+    <dimen name="media_margin_top">8dp</dimen>
+    <dimen name="motion_margin_top">10dp</dimen>
+    <dimen name="motion_margin_left">10dp</dimen>
+    <dimen name="motion_margin_right">10dp</dimen>
+    <dimen name="motion_margin_bottom">10dp</dimen>
+    <dimen name="motion_padding_top">4dp</dimen>
+    <dimen name="motion_padding_left">0dp</dimen>
+    <dimen name="motion_padding_right">0dp</dimen>
+    <dimen name="motion_padding_bottom">4dp</dimen>
+</resources>
