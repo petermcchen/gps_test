@@ -29,7 +29,7 @@ import android.media.MediaRecorder;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, SensorListFragment.OnSensorClickListener {
     private final static String TAG = "MainActivity";
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
 
     private AboutFragment mAboutFragment;
     private SensorListFragment mSensorListFragment;
