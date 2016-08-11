@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     //private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 2;
 
-    private XMSDevice mXMSDevice;
+    private XMSDevice mXMSDevice = null;
 
     //
     // Private
@@ -123,14 +123,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setContentView(R.layout.activity_main);
 
-        if (DEBUG)
-            Log.d (TAG, "New XMSDevice");
-        mXMSDevice = new XMSDevice("test");
-        if (DEBUG)
-            Log.d (TAG, "Check XMSDevice valid or not");
-        mXMSDevice.checkValidation(); // Restful API test
+        mXMSDevice = MainApplication.getXMSDevice();
+        if (mXMSDevice == null) {
+            MainApplication.createXMSDevice();
+            mXMSDevice = MainApplication.getXMSDevice();
+        }
+
+        if (mXMSDevice != null)
+            mXMSDevice.checkValidation(); // Restful API test
+        else
+            Log.e (TAG, "XMSDevice is null!");
 
         setupLayout();
+
+        showSensorList();
     }
 
     @Override

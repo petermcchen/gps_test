@@ -32,6 +32,7 @@ public class MainApplication extends Application {
     private static WindowManager mWindowManager = null;
     private static DisplayMetrics mMetrics = null;
 
+    private static XMSDevice mXMSDevice = null;
 
     //
     // Private
@@ -248,5 +249,21 @@ public class MainApplication extends Application {
 
         if(DEBUG)
             Log.d(TAG, "getSystemMetrics width:" + mWidth + " height:" + mHeight + " density:" + mDensity + " orientation:" + mRotation);
+    }
+
+    // XMS
+    public static void createXMSDevice()
+    {
+        if (DEBUG)
+            Log.d (TAG, "New XMSDevice");
+        mXMSDevice = new XMSDevice("test");
+        if (mXMSDevice == null)
+            Log.e (TAG, "XMSDevice create failed!");
+        //mXMSDevice.checkValidation(); // Restful API test
+    }
+
+    public static XMSDevice getXMSDevice()
+    {
+        return mXMSDevice;
     }
 }

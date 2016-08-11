@@ -2,6 +2,7 @@ package com.accton.iot.rd.gps;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -35,20 +36,88 @@ public class SensorMapsActivity extends FragmentActivity implements OnMapReadyCa
     private MarkerOptions mPseudoMarkerOpt = null;
     private HashMap<String, Marker> mPseudoMarkerDict = null;
     private MarkerOptions mSensorMarkerOpt = null;
+    private HashMap<String, Marker> mSensorMarkerDict = null;
     private Boolean mIsMapReady = false;
+    private Handler mQueryGPSHandler = new Handler();
+    private final int QUERY_GPS_DATA_INTERVAL = 2000; // 2 seconds
+    private XMSDevice mXMSDevice = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if(DEBUG)
             Log.d(TAG, "onCreate");
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_sensor_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mPseudoMarkerDict = new HashMap<String, Marker>();
+        mSensorMarkerDict = new HashMap<String, Marker>();
+        if(DEBUG)
+            Log.d(TAG, "onCreate end.");
+
+        // Obtain XMSDevice
+        mXMSDevice = MainApplication.getXMSDevice();
+        if (mXMSDevice == null) {
+            MainApplication.createXMSDevice();
+            mXMSDevice = MainApplication.getXMSDevice();
+        }
+
+        // Create runnable...
+        mQueryGPSHandler.removeCallbacks(mQueryGPSRunnable);
+        mQueryGPSHandler.postDelayed(mQueryGPSRunnable, QUERY_GPS_DATA_INTERVAL);
+}
+
+    @Override
+    public void onDestroy()
+    {
+        if(DEBUG)
+            Log.d(TAG, "onDestroy");
+
+        mQueryGPSHandler.removeCallbacks(mQueryGPSRunnable);
+
+        super.onDestroy();
     }
 
+    @Override
+    public void onStart()
+    {
+        if(DEBUG)
+            Log.d(TAG, "onStart");
+
+        super.onStart();
+    }
+
+    @Override
+    public void onStop()
+    {
+        if(DEBUG)
+            Log.d(TAG, "onStop");
+
+        super.onStop();
+    }
+
+    @Override
+    public void onResume()
+    {
+        if(DEBUG)
+            Log.d(TAG, "onResume");
+
+        super.onResume();
+    }
+
+    @Override
+    public void onPause()
+    {
+        if(DEBUG)
+            Log.d(TAG, "onPause");
+
+        super.onPause();
+    }
 
     /**
      * Manipulates the map once available.
@@ -124,8 +193,8 @@ public class SensorMapsActivity extends FragmentActivity implements OnMapReadyCa
         pseudoMarkerOpt.anchor(0.5f, 0.5f);
         pseudoMarkerOpt.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA));
 
-        //for(int index = 0; index < 8; index++)
-        //    mPseudoMarkerDict.put(""+index, mMap.addMarker(pseudoMarkerOpt));
+        for(int index = 0; index < 8; index++)
+            mPseudoMarkerDict.put(""+index, mMap.addMarker(pseudoMarkerOpt));
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mCurrentPosition, 15)); // The desired zoom level, in the range of 2.0 to 21.0.
         mIsMapReady = true;
@@ -161,4 +230,24 @@ public class SensorMapsActivity extends FragmentActivity implements OnMapReadyCa
         // Get back the mutable Circle
         return mMap.addCircle(circleOptions);
     }
+
+    private Runnable mQueryGPSRunnable = new Runnable()
+    {
+        @Override
+        public void run()
+        {
+            if(DEBUG)
+                Log.d(TAG, "mQueryGPSRunnable run");
+
+            // Query GPS data, restful api
+            if (mXMSDevice != null)
+                mXMSDevice.checkValidation(); // TODO... Restful API test
+            else
+                Log.e (TAG, "XMSDevice is null!");
+
+            // Re-start with timer
+            mQueryGPSHandler.removeCallbacks(mQueryGPSRunnable);
+            mQueryGPSHandler.postDelayed(mQueryGPSRunnable, QUERY_GPS_DATA_INTERVAL);
+        }
+    };
 }
