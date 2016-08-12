@@ -40,9 +40,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView mNavigationView;
     private String mTitle;
 
-    private static AudioManager mAudioManager = null;
+    //private static AudioManager mAudioManager = null;
     //private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
-    private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 2;
+    //private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 2;
 
     private XMSDevice mXMSDevice = null;
 

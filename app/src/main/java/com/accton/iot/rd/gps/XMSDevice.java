@@ -5,13 +5,13 @@ package com.accton.iot.rd.gps;
  */
 import android.util.Log;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
-import rx.android.schedulers.AndroidSchedulers;
+import retrofit2.HttpException;
+import retrofit2.Response;
+import rx.Observable;
 import rx.schedulers.Schedulers;
 
 public class XMSDevice {
@@ -19,25 +19,11 @@ public class XMSDevice {
     private final static boolean DEBUG = true;
 
     private String mName;
-
-    private int mRestfulPort=8000;	// = 18000;
-    private int mRtspPort=554;		// = 10554
-    private int mCgiPort=6561;		// = 16561;
-
-    private Socket mCgiSocket;
-    private OutputStream mCgiSocketOutput;
-
+    private int mRestfulPort=8000;
     private XMSRestCommand mRestCommand;
-
     private SystemInfo mSystemInfo = new SystemInfo();
 
-    private void deviceValid()
-    {
-        if(DEBUG)
-            Log.d(TAG, "deviceValid");
-
-        //mDeviceBus.post(new DeviceConnectedEvent(this));
-    }
+    private List<SensorDeviceInfo> mSensorDeviceList = new ArrayList<SensorDeviceInfo>();
 
     public XMSDevice(String name)
     {
@@ -48,139 +34,130 @@ public class XMSDevice {
         mRestCommand = new XMSRestCommand(mRestfulPort);
     }
 
-    private void deviceInvalid(Throwable throwable)
-    {
-        if(DEBUG)
-            Log.d(TAG, "deviceInvalid t:" + throwable);
-
-        //if(!(throwable instanceof RetrofitError))
-        //    return;
-
-        //RetrofitError error = (RetrofitError) throwable;
-
-        //if(error==null)
-        //    return;
-
-        //Response response = error.getResponse();
-
-        //if(DEBUG)
-        //    Log.d(TAG, "deviceInvalid r:" + response);
-
-        //int status = ACCESS_CODE_AUTHORITY_ERROR;
-
-        //if(response!=null)
-        //    status = response.getStatus();
-
-        //if(DEBUG)
-        //    Log.d(TAG, "deviceInvalid s:" + status);
-
-        //if(status==ACCESS_CODE_AUTHORITY_ERROR)
-        //{
-        //mCurrentAccessCodeState = ACCESS_CODE_CHECK_STATE.STATE_USER_CHECKING;
-
-        //accessFail(throwable);
-        //}
-        //else
-        //{
-        //mDeviceBus.post(new DeviceConnectionFailEvent(this));
-        //}
-    }
-
     public void checkValidation()
     {
         if(DEBUG)
             Log.d(TAG, "checkValidation");
 
         mRestCommand.getSystemInfo()
-                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
                 .doOnCompleted(() -> deviceValid())
-                .subscribeOn(Schedulers.io()) // Fix android.os.NetworkOnMainThreadException issue
                 .subscribe(info -> mSystemInfo.setSystemInfo(info.serialno, info.version, info.mac), response -> deviceInvalid(response));
     }
 
-    public void startTalking()
+    public void queryDeviceData(int did)
+    {
+        if (DEBUG)
+            Log.d(TAG, "queryDeviceData, did: " + did);
+
+        mRestCommand.getDeviceData(did)
+                .subscribeOn(Schedulers.newThread())
+                //.flatMap(device -> Observable.from(device))
+                .doOnCompleted(() -> getDeviceDataSuccess())
+                .subscribe(device -> getDeviceData(device.gatewayid, device.gprmc, device.rssi), response -> getDeviceDatFail(response));
+    }
+
+    //public void queryDevices()
+    //{
+    //    if (DEBUG)
+    //        Log.d(TAG, "querySensorDevices");
+
+    //    mSensorDeviceList.clear();
+
+    //    mRestCommand.queryGPSData()
+    //            .subscribeOn(Schedulers.newThread())
+    //            .flatMap(device -> Observable.from(device))
+    //            .doOnCompleted(() -> addSensorSuccess())
+    //            .subscribe(device -> addSensorDevice(Integer.valueOf(device.deviceid), device.devicename, device.serial, device.mac), response -> addSensorFail(response));
+    //}
+
+    private void getDeviceData(String gid, String gprmc, String rssi)
+    {
+        if (DEBUG)
+            Log.d(TAG, "getDeviceData gps:" + gprmc);
+
+        GPSDataInfo mGPS = new GPSDataInfo();
+
+        mGPS.setGprmc(gprmc);
+    }
+
+    private void getDeviceDataSuccess()
     {
         if(DEBUG)
-            Log.d(TAG, "startTalking");
+            Log.d(TAG, "getDeviceDataSuccess");
+    }
 
-        if(mCgiSocket!=null)
+    private void getDeviceDatFail(Throwable throwable)
+    {
+        if(DEBUG)
+            Log.d(TAG, "getDeviceDatFail t:" + throwable);
+
+        if(throwable instanceof HttpException)
         {
-            try
-            {
-                if(mCgiSocketOutput!=null)
-                    mCgiSocketOutput.close();
+            HttpException exception = (HttpException) throwable;
 
-                mCgiSocket.close();
-            }
-            catch(IOException e)
-            {
-                e.printStackTrace();
-            }
+            if(DEBUG)
+                Log.d(TAG, "deviceInvalid e:" + exception);
+
+            if(exception==null)
+                return;
+
+            Response response = exception.response();
+
+            if(DEBUG)
+                Log.d(TAG, "deviceInvalid r:" + response);
+
+            int status = -1;
+
+            if(response!=null)
+                status = response.code();
+
+            if(DEBUG)
+                Log.d(TAG, "deviceInvalid s:" + status);
         }
-
-        try
+        else if(throwable instanceof IOException)
         {
-            mCgiSocket = new Socket("10.9.3.194", mCgiPort);
-
-            mCgiSocketOutput = mCgiSocket.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(mCgiSocketOutput, "UTF8"));
-
-            writer.write("POST /audio.play HTTP/1.1\r\n");
-            writer.write("Content-Length: 0\r\n");
-            writer.write("Content-Type: audio/x-ulaw\r\n");
-            writer.write("\r\n");
-
-            writer.flush();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
         }
     }
 
-    public void stopTalking()
+    private void deviceValid()
     {
         if(DEBUG)
-            Log.d(TAG, "stopTalking");
+            Log.d(TAG, "deviceValid");
 
-        if(mCgiSocket==null)
-            return;
-
-        try
-        {
-            if(mCgiSocketOutput!=null)
-            {
-                mCgiSocketOutput.flush();
-                mCgiSocketOutput.close();
-            }
-
-            mCgiSocket.close();
-        }
-        catch(IOException e)
-        {
-            e.printStackTrace();
-        }
+        //mDeviceBus.post(new DeviceConnectedEvent(this));
     }
 
-    public void sendTalkingAudio(byte[] audioData)
+    private void deviceInvalid(Throwable throwable)
     {
         if(DEBUG)
-            Log.d(TAG, "sendTalkingAudio");
+            Log.d(TAG, "deviceInvalid t:" + throwable);
 
-        if(mCgiSocket==null)
-            return;
-
-        if(mCgiSocketOutput==null)
-            return;
-
-        try
+        if(throwable instanceof HttpException)
         {
-            mCgiSocketOutput.write(audioData);
-            mCgiSocketOutput.flush();
+            HttpException exception = (HttpException) throwable;
+
+            if(DEBUG)
+                Log.d(TAG, "deviceInvalid e:" + exception);
+
+            if(exception==null)
+                return;
+
+            Response response = exception.response();
+
+            if(DEBUG)
+                Log.d(TAG, "deviceInvalid r:" + response);
+
+            int status = -1;
+
+            if(response!=null)
+                status = response.code();
+
+            if(DEBUG)
+                Log.d(TAG, "deviceInvalid s:" + status);
         }
-        catch(IOException e)
+        else if(throwable instanceof IOException)
         {
-            e.printStackTrace();
         }
     }
 }

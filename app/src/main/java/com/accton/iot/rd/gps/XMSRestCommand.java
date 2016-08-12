@@ -10,11 +10,13 @@ import retrofit2.Retrofit;
 import retrofit2.RxJavaCallAdapterFactory;
 import retrofit2.http.GET;
 // include below to assign specifically. Otherwise android.database.Observable will be selected.
+import retrofit2.http.Path;
 import rx.Observable;
 
 import okhttp3.OkHttpClient;
 //import com.squareup.okhttp.OkHttpClient;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class XMSRestCommand {
@@ -39,6 +41,11 @@ public class XMSRestCommand {
     private interface RestfulService {
         @GET("/System/info")
         Observable<SystemInfoResponse> getSystemInfo(); // RxJava form...
+        @GET("/System/{did}/gps")
+        Observable<DeviceDataResponse> getDeviceData(@Path("did") int deviceId);
+        //@GET("/System/devices")
+        //Observable<List<DeviceQueryResponse>> deviceQuery(@Query("usertoken") String usertoken);
+
     }
 
     public XMSRestCommand(int port)
@@ -101,5 +108,13 @@ public class XMSRestCommand {
             Log.d(TAG, "getSystemInfo call RestfulService");
 
         return mRestfulService.getSystemInfo();
+    }
+
+    public Observable<DeviceDataResponse> getDeviceData(int deviceId) // Add Device's member list
+    {
+        if (DEBUG)
+            Log.d(TAG, "getDeviceData call RestfulService");
+
+        return mRestfulService.getDeviceData(deviceId);
     }
 }

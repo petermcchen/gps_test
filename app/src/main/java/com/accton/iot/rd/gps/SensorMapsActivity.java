@@ -39,7 +39,7 @@ public class SensorMapsActivity extends FragmentActivity implements OnMapReadyCa
     private HashMap<String, Marker> mSensorMarkerDict = null;
     private Boolean mIsMapReady = false;
     private Handler mQueryGPSHandler = new Handler();
-    private final int QUERY_GPS_DATA_INTERVAL = 2000; // 2 seconds
+    private final int QUERY_GPS_DATA_INTERVAL = 6000; // 6 seconds
     private XMSDevice mXMSDevice = null;
 
     @Override
@@ -241,7 +241,8 @@ public class SensorMapsActivity extends FragmentActivity implements OnMapReadyCa
 
             // Query GPS data, restful api
             if (mXMSDevice != null)
-                mXMSDevice.checkValidation(); // TODO... Restful API test
+                mXMSDevice.queryDeviceData(0); // TODO... Restful API test
+                //mXMSDevice.checkValidation(); // TODO... Restful API test
             else
                 Log.e (TAG, "XMSDevice is null!");
 
